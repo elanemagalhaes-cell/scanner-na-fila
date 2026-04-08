@@ -275,12 +275,15 @@ function onScanFailure() {}
 async function apiPost(action, payload = {}) {
   const response = await fetch(API_BASE_URL, {
     method: "POST",
+
+    // ⚠️ Apps Script aceita melhor assim
     headers: {
-      "Content-Type": "application/json",
-      ...(API_KEY ? { "x-api-key": API_KEY } : {})
+      "Content-Type": "text/plain;charset=utf-8"
     },
+
     body: JSON.stringify({
       action,
+      origin: window.location.origin, // 👈 AQUI É O SEGREDO
       ...payload
     })
   });
