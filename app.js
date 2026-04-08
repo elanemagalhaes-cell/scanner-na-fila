@@ -1,4 +1,5 @@
-const API_BASE_URL = "COLE_AQUI_A_URL_DO_SEU_BACKEND";
+const API_BASE_URL = "https://script.google.com/a/macros/shopee.com/s/AKfycbxoe-Y8Y4B9qWT3D1ZFMjdXDMx92j5-ht_0HHIZFyDNmAFNoDALXi_YiX8Jqd4HAMib/exec
+";
 const API_KEY = ""; // deixe vazio se não usar
 
 let ultimo = null;
