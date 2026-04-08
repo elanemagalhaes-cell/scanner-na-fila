@@ -1,78 +1,419 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Na Fila — Scanner</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Na Fila — Scanner</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+
+  header {
+    background: #333; color: #fff; padding: 12px 16px; text-align: center;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
+  }
+
+  .app-icon {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #ff7a00, #ffb347);
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+
+  .app-title { display: flex; flex-direction: column; align-items: flex-start; }
+  .app-title h1 { margin: 0; font-size: 18px; }
+  .app-title span { font-size: 11px; opacity: 0.8; }
+
+  #reader { max-width: 500px; margin: 15px auto 0 auto; }
+
+  #painel-resultado {
+    max-width: 500px; margin: 15px auto; padding: 12px 14px; background: #fff;
+    border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  }
+
+  .linha { margin: 6px 0; font-size: 14px; }
+
+  #opcao-liberar, #opcoes-spx, #opcoes-placa, #opcoes-veiculo {
+    display: none; margin-top: 12px; gap: 12px; align-items: center;
+  }
+
+  button{
+    padding: 16px 18px;
+    border: none;
+    border-radius: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    font-size: 14px;
+    letter-spacing: .3px;
+    min-height: 52px;
+    flex: 1;
+    box-shadow: 0 10px 0 rgba(0,0,0,.22), 0 16px 22px rgba(0,0,0,.18);
+    transform: translateY(0);
+    transition: transform .06s ease, box-shadow .06s ease, filter .12s ease;
+    position: relative;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button::before{
+    content:"";
+    position:absolute;
+    left:14px; right:14px;
+    top:7px;
+    height:42%;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0));
+    pointer-events:none;
+  }
+  button:active{
+    transform: translateY(7px);
+    box-shadow: 0 3px 0 rgba(0,0,0,.22), 0 10px 14px rgba(0,0,0,.18);
+  }
+  button:hover{ filter: brightness(1.03); }
+
+  .ok { background: linear-gradient(180deg, #5ee081, #2ea84a); color: white; }
+  .div { background: linear-gradient(180deg, #ff6b5c, #d84233); color: white; margin-left: auto; }
+  .active { background: linear-gradient(180deg, #4aa3ff, #1f6fd6); color: white; }
+
+  @media (max-width: 420px){
+    #opcao-liberar, #opcoes-spx, #opcoes-placa, #opcoes-veiculo { flex-direction: column; }
+    .div{ margin-left: 0; }
+    button{ width:100%; }
+  }
+
+  /* ✅ Mensagem grande e visível */
+  #msg{
+    margin-top: 12px;
+    font-size: 18px;
+    font-weight: 900;
+    min-height: 44px;
+    padding: 12px 12px;
+    border-radius: 12px;
+    background: #fff7e6;
+    border: 2px solid #ff7a00;
+    color: #222;
+    line-height: 1.25;
+    box-shadow: 0 8px 18px rgba(0,0,0,.12);
+  }
+  .msg-erro{
+    background: #ffecec !important;
+    border-color: #d84233 !important;
+    color: #7a0a00 !important;
+  }
+  .msg-ok{
+    background: #ecfff1 !important;
+    border-color: #2ea84a !important;
+    color: #0b5b20 !important;
+  }
+
+  /* ✅ Botão LIBERAR mais forte */
+  #opcao-liberar button{
+    font-size: 18px;
+    min-height: 62px;
+    border-radius: 16px;
+    letter-spacing: .8px;
+  }
+
+  .watermark {
+    position: fixed;
+    right: 10px;
+    bottom: 8px;
+    font-size: 11px;
+    color: #000;
+    opacity: 0.22;
+    text-align: right;
+    pointer-events: none;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <div class="app-icon">NF</div>
-    <div class="app-title">
-      <h1>Na Fila — Scanner</h1>
-      <span>Check-in de motoristas</span>
-    </div>
-  </header>
 
-  <main>
-    <div id="camera-controls">
-      <button class="btn-camera" id="btn-open-camera">📷 Abrir câmera</button>
-      <button class="btn-stop" id="btn-stop-camera">⛔ Parar câmera</button>
-      <button class="btn-switch" id="btn-switch-camera">🔄 Trocar câmera</button>
-      <button class="btn-test" id="btn-test-camera">🧪 Testar permissão</button>
-      <button class="btn-help" id="btn-toggle-help">🛠 Ajuda</button>
-    </div>
+<header>
+  <div class="app-icon">NF</div>
+  <div class="app-title">
+    <h1>Na Fila — Scanner</h1>
+    <span>Check-in de motoristas</span>
+  </div>
+</header>
 
-    <div id="reader"></div>
+<div id="reader"></div>
 
-    <section id="painel-resultado">
-      <div class="linha"><b>ID:</b> <span id="res-id">–</span></div>
-      <div class="linha"><b>Nome:</b> <span id="res-nome">–</span></div>
-      <div class="linha"><b>Placa:</b> <span id="res-placa">–</span></div>
-      <div class="linha"><b>Tipo de Veículo:</b> <span id="res-tipo">–</span></div>
-      <div class="linha"><b>SPX Status:</b> <span id="res-spx">–</span></div>
-      <div class="linha"><b>Alteração de status:</b> <span id="res-change">–</span></div>
+<section id="painel-resultado">
+  <div class="linha"><b>ID:</b> <span id="res-id">–</span></div>
+  <div class="linha"><b>Nome:</b> <span id="res-nome">–</span></div>
+  <div class="linha"><b>Placa:</b> <span id="res-placa">–</span></div>
+  <div class="linha"><b>Tipo de Veículo:</b> <span id="res-tipo">–</span></div>
+  <div class="linha"><b>SPX Status:</b> <span id="res-spx">–</span></div>
 
-      <div id="opcao-liberar">
-        <button class="active" id="btn-liberar">LIBERAR</button>
-      </div>
+  <!-- ✅ Sinalização visual -->
+  <div class="linha"><b>Alteração de status:</b> <span id="res-change">–</span></div>
 
-      <div id="opcoes-spx">
-        <button class="active" id="btn-spx-active">Marcar como Active</button>
-        <button class="div" id="btn-spx-divergencia">Divergência</button>
-      </div>
-
-      <div id="opcoes-placa">
-        <button class="ok" id="btn-placa-ok">Placa OK</button>
-        <button class="div" id="btn-placa-divergente">Placa divergente</button>
-      </div>
-
-      <div id="opcoes-veiculo">
-        <button class="ok" id="btn-veiculo-ok">Veículo OK</button>
-        <button class="div" id="btn-veiculo-divergente">Veículo divergente</button>
-      </div>
-
-      <div id="msg">Clique em <b>Abrir câmera</b> para iniciar o scanner.</div>
-
-      <div id="ajuda-permissao">
-        <div class="help-box">
-          <b>Se a câmera não abrir:</b>
-          1. Abra o site diretamente no Chrome<br>
-          2. Permita a câmera para este site<br>
-          3. Não abra dentro de WhatsApp, Gmail ou navegador interno<br>
-          4. Teste pelo botão <b>🧪 Testar permissão</b><br>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <div id="debug-panel">
-    <div id="debug-title">DEBUG CÂMERA</div>
-    <div id="debug-log"></div>
+  <!-- ✅ NOVO: Botão LIBERAR (só aparece se NÃO tiver check-in) -->
+  <div id="opcao-liberar">
+    <button class="active" onclick="liberar()">LIBERAR</button>
   </div>
 
-  <script src="app.js"></script>
+  <div id="opcoes-spx">
+    <button class="active" onclick="confirmarSPX('ACTIVE')">Marcar como Active</button>
+    <button class="div" onclick="confirmarSPX('DIVERGENCIA')">Divergência</button>
+  </div>
+
+  <div id="opcoes-placa">
+    <button class="ok" onclick="confirmarPlaca('OK')">Placa OK</button>
+    <button class="div" onclick="confirmarPlaca('DIVERGENTE')">Placa divergente</button>
+  </div>
+
+  <div id="opcoes-veiculo">
+    <button class="ok" onclick="confirmarVeiculo('OK')">Veículo OK</button>
+    <button class="div" onclick="confirmarVeiculo('DIVERGENTE')">Veículo divergente</button>
+  </div>
+
+  <div id="msg"></div>
+</section>
+
+<div class="watermark">
+  Idealizador: Cinthia Castro<br>
+  Desenvolvedor: Elane Nascimento Magalhaes
+</div>
+
+<script>
+let ultimo = null;
+let dados = null;
+let placaStatus = null;
+let veiculoStatus = null;
+let markedActive = false;
+
+// ✅ controle de liberação (somente quando não tem check-in)
+let liberado = false;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const qr = new Html5Qrcode("reader");
+  qr.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 250, height: 150 } },
+    scanOK,
+    err => {}
+  );
+});
+
+function hideAllOptions(){
+  document.getElementById("opcao-liberar").style.display = "none";
+  document.getElementById("opcoes-spx").style.display = "none";
+  document.getElementById("opcoes-placa").style.display = "none";
+  document.getElementById("opcoes-veiculo").style.display = "none";
+}
+
+// ✅ Fluxo original (getPlaca → SPX → placa → veículo → save)
+function seguirFluxoNormal(){
+  const msgEl = document.getElementById("msg");
+  msgEl.className = "";
+  msgEl.textContent = "Buscando dados...";
+  hideAllOptions();
+
+  google.script.run
+    .withSuccessHandler(r => {
+      if (!r || !r.ok) {
+        msgEl.className = "msg-erro";
+        msgEl.textContent = "Erro: " + (r ? r.error : "");
+        return;
+      }
+
+      dados = r;
+      document.getElementById("res-nome").textContent = r.nome;
+      document.getElementById("res-placa").textContent = r.placa;
+      document.getElementById("res-tipo").textContent = r.tipo;
+      document.getElementById("res-spx").textContent = r.spx_status || "–";
+      document.getElementById("res-change").textContent = "–";
+
+      const spx = (r.spx_status || "").trim();
+
+      if (spx && spx !== "Active") {
+        document.getElementById("opcoes-spx").style.display = "flex";
+        msgEl.className = "";
+        msgEl.textContent = "SPX status diferente de Active. Selecione: Active ou Divergência.";
+        return;
+      }
+
+      document.getElementById("opcoes-placa").style.display = "flex";
+      msgEl.className = "";
+      msgEl.textContent = "Confirme a placa.";
+    })
+    .getPlaca(ultimo);
+}
+
+function scanOK(texto) {
+  ultimo = texto;
+  dados = null;
+  placaStatus = null;
+  veiculoStatus = null;
+  markedActive = false;
+  liberado = false;
+
+  document.getElementById("res-id").textContent = texto;
+  document.getElementById("res-nome").textContent = "–";
+  document.getElementById("res-placa").textContent = "–";
+  document.getElementById("res-tipo").textContent = "–";
+  document.getElementById("res-spx").textContent = "–";
+  document.getElementById("res-change").textContent = "–";
+
+  hideAllOptions();
+
+  const msgEl = document.getElementById("msg");
+  msgEl.className = "";
+  msgEl.textContent = "Verificando Check-in...";
+
+  google.script.run
+    .withSuccessHandler(r => {
+      if (!r || !r.ok) {
+        msgEl.className = "msg-erro";
+        msgEl.textContent = "Erro: " + (r ? r.error : "");
+        return;
+      }
+
+      // ✅ SE NÃO TEM CHECK-IN: mostra mensagem + botão LIBERAR
+      if (r.hasCheckin !== true) {
+        msgEl.className = "msg-erro";
+        msgEl.textContent = "Check in não foi realizado. Clique em LIBERAR para continuar.";
+        document.getElementById("opcao-liberar").style.display = "flex";
+        document.getElementById("opcao-liberar").scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      // ✅ SE TEM CHECK-IN: segue fluxo normal automaticamente
+      seguirFluxoNormal();
+    })
+    .checkCheckin(texto);
+}
+
+// ✅ botão LIBERAR: permite seguir mesmo sem check-in
+function liberar(){
+  if (!ultimo) return;
+  liberado = true;
+  seguirFluxoNormal();
+}
+
+function confirmarSPX(opcao){
+  if (!dados || !ultimo) return;
+
+  if (opcao === "DIVERGENCIA") {
+    const payload = {
+      codigo: ultimo,
+      placa: dados.placa,
+      placaStatus: '',
+      tipoVeiculo: dados.tipo,
+      veiculoStatus: '',
+      spx_status: dados.spx_status || '',
+      markedActive: false
+    };
+
+    document.getElementById("msg").className = "";
+    document.getElementById("msg").textContent = "Registrando como Divergente...";
+    hideAllOptions();
+
+    google.script.run
+      .withSuccessHandler(r => {
+        if (!r || !r.ok) {
+          document.getElementById("msg").className = "msg-erro";
+          document.getElementById("msg").textContent = "Erro ao registrar Divergente";
+          setTimeout(resetar, 2500);
+          return;
+        }
+        document.getElementById("msg").className = "msg-ok";
+        document.getElementById("msg").textContent = "✓ Registrado como Divergente!";
+        setTimeout(resetar, 2000);
+      })
+      .saveDivergente(payload);
+
+    return;
+  }
+
+  // === MARCAR COMO ACTIVE ===
+  document.getElementById("msg").className = "";
+  document.getElementById("msg").textContent = "Atualizando SPX Status para Active...";
+  hideAllOptions();
+  markedActive = true;
+
+  google.script.run
+    .withSuccessHandler(r => {
+      if (!r || !r.ok) {
+        document.getElementById("msg").className = "msg-erro";
+        document.getElementById("msg").textContent =
+          "Erro ao atualizar SPX: " + (r ? r.error : "");
+        setTimeout(resetar, 2500);
+        return;
+      }
+
+      // ✅ ATUALIZA ESTADO LOCAL
+      dados.spx_status = "Active";
+
+      document.getElementById("res-spx").textContent = "Active";
+      document.getElementById("res-change").textContent = "SIM";
+
+      document.getElementById("opcoes-placa").style.display = "flex";
+      document.getElementById("msg").className = "";
+      document.getElementById("msg").textContent =
+        "SPX atualizado. Confirme a placa.";
+    })
+    .setSpxActive(ultimo);
+}
+
+function confirmarPlaca(status) {
+  placaStatus = status;
+  document.getElementById("msg").className = "";
+  document.getElementById("msg").textContent = "Confirme o tipo de veículo.";
+  document.getElementById("opcoes-veiculo").style.display = "flex";
+}
+
+function confirmarVeiculo(status) {
+  veiculoStatus = status;
+
+  const payload = {
+    codigo: ultimo,
+    placa: dados.placa,
+    placaStatus: placaStatus,
+    tipoVeiculo: dados.tipo,
+    veiculoStatus: status,
+    spx_status: dados.spx_status || '',
+    markedActive: markedActive
+  };
+
+  document.getElementById("msg").className = "";
+  document.getElementById("msg").textContent = "Salvando...";
+
+  google.script.run
+    .withSuccessHandler(r => {
+      if (!r || !r.ok) {
+        document.getElementById("msg").className = "msg-erro";
+        document.getElementById("msg").textContent = "Erro ao salvar";
+        return;
+      }
+      document.getElementById("msg").className = "msg-ok";
+      document.getElementById("msg").textContent = "✓ Salvo!";
+      setTimeout(resetar, 2000);
+    })
+    .saveScan(payload);
+}
+
+function resetar() {
+  document.getElementById("res-id").textContent = "–";
+  document.getElementById("res-nome").textContent = "–";
+  document.getElementById("res-placa").textContent = "–";
+  document.getElementById("res-tipo").textContent = "–";
+  document.getElementById("res-spx").textContent = "–";
+  document.getElementById("res-change").textContent = "–";
+  document.getElementById("msg").className = "";
+  document.getElementById("msg").textContent = "";
+  hideAllOptions();
+  markedActive = false;
+  liberado = false;
+  ultimo = null;
+  dados = null;
+  placaStatus = null;
+  veiculoStatus = null;
+}
+</script>
+
 </body>
 </html>
