@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Na Fila — Scanner</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="app-icon">NF</div>
+    <div class="app-title">
+      <h1>Na Fila — Scanner</h1>
+      <span>Check-in de motoristas</span>
+    </div>
+  </header>
+
+  <main>
+    <div id="camera-controls">
+      <button class="btn-camera" id="btn-open-camera">📷 Abrir câmera</button>
+      <button class="btn-stop" id="btn-stop-camera">⛔ Parar câmera</button>
+      <button class="btn-switch" id="btn-switch-camera">🔄 Trocar câmera</button>
+      <button class="btn-test" id="btn-test-camera">🧪 Testar permissão</button>
+      <button class="btn-help" id="btn-toggle-help">🛠 Ajuda</button>
+    </div>
+
+    <div id="reader"></div>
+
+    <section id="painel-resultado">
+      <div class="linha"><b>ID:</b> <span id="res-id">–</span></div>
+      <div class="linha"><b>Nome:</b> <span id="res-nome">–</span></div>
+      <div class="linha"><b>Placa:</b> <span id="res-placa">–</span></div>
+      <div class="linha"><b>Tipo de Veículo:</b> <span id="res-tipo">–</span></div>
+      <div class="linha"><b>SPX Status:</b> <span id="res-spx">–</span></div>
+      <div class="linha"><b>Alteração de status:</b> <span id="res-change">–</span></div>
+
+      <div id="opcao-liberar">
+        <button class="active" id="btn-liberar">LIBERAR</button>
+      </div>
+
+      <div id="opcoes-spx">
+        <button class="active" id="btn-spx-active">Marcar como Active</button>
+        <button class="div" id="btn-spx-divergencia">Divergência</button>
+      </div>
+
+      <div id="opcoes-placa">
+        <button class="ok" id="btn-placa-ok">Placa OK</button>
+        <button class="div" id="btn-placa-divergente">Placa divergente</button>
+      </div>
+
+      <div id="opcoes-veiculo">
+        <button class="ok" id="btn-veiculo-ok">Veículo OK</button>
+        <button class="div" id="btn-veiculo-divergente">Veículo divergente</button>
+      </div>
+
+      <div id="msg">Clique em <b>Abrir câmera</b> para iniciar o scanner.</div>
+
+      <div id="ajuda-permissao">
+        <div class="help-box">
+          <b>Se a câmera não abrir:</b>
+          1. Abra o site diretamente no Chrome<br>
+          2. Permita a câmera para este site<br>
+          3. Não abra dentro de WhatsApp, Gmail ou navegador interno<br>
+          4. Teste pelo botão <b>🧪 Testar permissão</b><br>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="debug-panel">
+    <div id="debug-title">DEBUG CÂMERA</div>
+    <div id="debug-log"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
